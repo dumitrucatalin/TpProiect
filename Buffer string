@@ -1,0 +1,305 @@
+#include <Windows.h>
+#include "resource1.h"
+
+#define IDC_PRESS   2
+#define IDC_OTHER	1
+
+
+HWND g_hToolbar = NULL;
+HWND hEdit;
+
+HWND TextBox;
+
+const char g_szClassName[] = "myWindowClass";
+char textSaved[20];
+
+HBRUSH g_hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); //////
+
+BOOL CALLBACK ToolDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+	switch (Message)
+	{
+	case WM_INITDIALOG:
+
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			EndDialog(hwnd, IDOK);
+			break;
+		case IDCANCEL:
+			EndDialog(hwnd, IDCANCEL);
+			break;
+		}
+		break;
+	default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+///
+
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+
+	
+
+	switch (msg)
+	{
+
+
+	case WM_CREATE:
+	{
+					  TextBox = CreateWindow("EDIT",
+						  "",
+						  WS_BORDER | WS_CHILD | WS_VISIBLE,
+						  10, 10, 400, 20,
+						  hwnd, NULL, NULL, NULL);
+
+
+					  CreateWindow("BUTTON",
+						  "GO",
+						  WS_BORDER | WS_CHILD | WS_VISIBLE,
+						  410, 10, 70, 20,
+						  hwnd, (HMENU)1, NULL, NULL);
+					  break;
+
+					  break;
+	}
+
+
+	case WM_LBUTTONDOWN:
+	{
+						   char szFileName[MAX_PATH];
+						   HINSTANCE hInstance = GetModuleHandle(NULL);
+
+						   GetModuleFileName(hInstance, szFileName, MAX_PATH);
+						   MessageBox(hwnd, szFileName, "This program is:", MB_OK | MB_ICONINFORMATION);
+
+						 
+
+	}
+		break;
+
+	case WM_RBUTTONDOWN:
+	{
+						   char szFileName[MAX_PATH];
+						   HINSTANCE hInstance = GetModuleHandle(NULL);
+
+					//	   GetModuleFileName(hInstance, szFileName, MAX_PATH);
+						   //   MessageBox(hwnd, szFileName, "This program is:", MB_OK | MB_ICONINFORMATION);
+	
+						MessageBox(hwnd, "Bye!", "This is also a message",
+							MB_OK | MB_ICONEXCLAMATION);
+	}
+		break;
+
+
+	case WM_COMMAND:
+
+		switch (LOWORD(wParam))
+	 {
+
+		case 1:
+		{		
+						int VAL=0;
+					//	char *t = &textSaved[0];
+						VAL = GetWindowText(TextBox, &textSaved[0], 20);
+						
+						::MessageBox(hwnd, textSaved, textSaved, MB_OK);
+						break;
+		}
+			break;
+
+	   case  ID_BBBS:
+	   {
+								
+						MessageBox(hwnd, "Bye!", "This is also a message",
+							MB_OK | MB_ICONEXCLAMATION);
+	   }
+		   break;
+
+	   case BUTTON1:
+	   {  
+					  char buffer[256];
+			   SendMessage(hEdit,
+			   WM_GETTEXT,
+			   sizeof(buffer) / sizeof(buffer[0]),
+			   reinterpret_cast<LPARAM>(buffer));
+			   MessageBox(NULL,
+			   buffer,
+			   "Information",
+			   MB_ICONINFORMATION);
+
+	  }
+		   break;
+
+	   case ID_HELP:
+	   {
+					   int ret = DialogBox(GetModuleHandle(NULL),
+						   MAKEINTRESOURCE(IDD_DIALOG2), hwnd, ToolDlgProc);
+					   if (ret == IDOK){
+						   MessageBox(hwnd, "Dialog exited with IDOK.", "Notice",
+							   MB_OK | MB_ICONINFORMATION);
+					   }
+					   else if (ret == IDCANCEL){
+						   MessageBox(hwnd, "Dialog exited with IDCANCEL.", "Notice",
+							   MB_OK | MB_ICONINFORMATION);
+					   }
+					   else if (ret == IDC_EDIT_DL2){
+						   MessageBox(hwnd, "Dialog failed!", "Error",
+							   MB_OK | MB_ICONINFORMATION);
+					   }
+	   }
+		   break;
+	   case ID_FILE_PRINT:
+	   {
+							// SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(NULL, MAKEINTRESOURCE("G:\Programe C++\ProiectV2.2\ProiectV2.2")));
+							 //SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(NULL, MAKEINTRESOURCE("G:\Programe C++\ProiectV2.2\ProiectV2.2")));
+							 MessageBox(hwnd, "Ceva interesant!!","Informatie", MB_OK | MB_ICONINFORMATION);
+							
+	   }
+		   break;
+	   case ID_TEXT:
+	   {
+					  DialogBox(GetModuleHandle(NULL),
+						  MAKEINTRESOURCE(IDD_DIALOG3), hwnd, ToolDlgProc);
+			
+	
+	   }
+		   break;
+	   case ID_TEXTBOX:
+	   {
+						  DialogBox(GetModuleHandle(NULL),
+							  MAKEINTRESOURCE(IDD_TEST), hwnd, ToolDlgProc);
+
+	   }
+		   break;
+	   case IDC_EDIT1:
+	   {
+						/*   MessageBox(hwnd, "bbbbbb!!", "mmmmmm", MB_OK | MB_ICONINFORMATION);
+
+						   int len = GetWindowTextLength(GetDlgItem(hwnd, IDC_EDIT1));
+						   if (len > 0)
+						   {
+							   int i;
+							   char* buf;
+
+							   buf = (char*)GlobalAlloc(GPTR, len + 1);
+							   GetDlgItemText(hwnd, IDC_EDIT1, buf, len + 1);
+
+							   //... do stuff with text ...
+
+							   MessageBox(hwnd, "bbbbbb!!", "mmmmmm", MB_OK | MB_ICONINFORMATION);
+							   //
+							   GlobalFree((HANDLE)buf);
+						   }
+						  */
+				   switch (HIWORD(wParam))
+			 {
+					
+					   SetDlgItemText(hwnd, IDC_EDIT_TEST, "This is a string");
+					   MessageBox(hwnd, "bbbbbb!!", "mmmmmm", MB_OK | MB_ICONINFORMATION);
+				   case LBN_SELCHANGE:
+				   {  // Selection changed, do stuff here.
+								
+										
+				   }
+
+					   break;
+				   case IDC_NUMBER:
+				   {	
+									  BOOL bSuccess;
+									  int nTimes = GetDlgItemInt(hwnd, IDC_NUMBER, &bSuccess, FALSE);
+									  int index = SendDlgItemMessage(hwnd, IDC_LISTBOX, IDC_ADD, 0, (LPARAM)"ceva ceva");
+									  SendDlgItemMessage(hwnd, IDD_DIALOG3, IDC_LISTBOX, (WPARAM)index, (LPARAM)nTimes);
+									  
+
+				   }
+					   break;
+
+			 }
+					   break;
+						   // ... other controls
+
+	   }
+
+		   break;
+	   }
+		
+	   return true;
+
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		break;
+	case WM_DESTROY:
+		DestroyWindow(g_hToolbar);
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+
+	return 0;
+}
+
+
+
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+	LPSTR lpCmdLine, int nCmdShow)
+{
+	WNDCLASSEX wc;
+	HWND hwnd;
+	MSG Msg;
+
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.style = 0;
+	wc.lpfnWndProc = WndProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = hInstance;
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hCursor = LoadCursor(NULL, IDC_HAND);
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 0);
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+	wc.lpszClassName = g_szClassName;
+	wc.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE("images.png"));
+	wc.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE("images.png"), IMAGE_ICON, 16, 16, 0);
+	
+
+	if (!RegisterClassEx(&wc))
+	{
+		MessageBox(NULL, "Window Registration Failed!", "Error!",
+			MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+
+	hwnd = CreateWindowEx(
+		WS_EX_CLIENTEDGE,
+		g_szClassName,
+		"The title of my window",
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT, 300, 120,
+		NULL, NULL, hInstance, NULL);
+
+	if (hwnd == NULL)
+	{
+		MessageBox(NULL, "Window Creation Failed!", "Error!",
+			MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+
+	ShowWindow(hwnd, nCmdShow);
+	UpdateWindow(hwnd);
+
+	while (GetMessage(&Msg, NULL, 0, 0) > 0)
+	{
+		TranslateMessage(&Msg);
+		DispatchMessage(&Msg);
+	}
+	return Msg.wParam;
+}

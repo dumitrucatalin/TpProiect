@@ -1,73 +1,129 @@
-#include <Windows.h>
-#include "resource1.h"
-
-#define IDC_PRESS   2
-#define IDC_OTHER	1
-
-
-HWND g_hToolbar = NULL;
-
+#include<Windows.h>
+#include"resource.h"
+#define IDC_MAIN_EDIT	101
 HWND hEdit;
-
 const char g_szClassName[] = "myWindowClass";
-
-
-
-
-BOOL CALLBACK ToolDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+char textSaved[20];
+struct tip
 {
-	switch (Message)
-	{
-	case WM_INITDIALOG:
+	int right;
+	int bottom;
 
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
+}rcClient;
+// Step 4: the Window Procedure
+
+
+///LOAD TEXT
+BOOL LoadTextFileToEdit(HWND hEdit, LPCTSTR pszFileName)
+{
+	HANDLE hFile;
+	BOOL bSuccess = FALSE;
+
+	hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, 0, NULL);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		DWORD dwFileSize;
+
+		dwFileSize = GetFileSize(hFile, NULL);
+		if (dwFileSize != 0xFFFFFFFF)
 		{
-		case IDOK:
-			EndDialog(hwnd, IDOK);
-			break;
-		case IDCANCEL:
-			EndDialog(hwnd, IDCANCEL);
-			break;
+			LPSTR pszFileText;
+
+			pszFileText =(LPSTR) GlobalAlloc(GPTR, dwFileSize + 1);
+			if (pszFileText != NULL)
+			{
+				DWORD dwRead;
+
+				if (ReadFile(hFile, pszFileText, dwFileSize, &dwRead, NULL))
+				{
+					pszFileText[dwFileSize] = 0; // Add null terminator
+					if (SetWindowText(hEdit, pszFileText))
+						bSuccess = TRUE; // It worked!
+				}
+				GlobalFree(pszFileText);
+			}
 		}
-		break;
-	default:
-		return FALSE;
+		CloseHandle(hFile);
 	}
-	return TRUE;
+	return bSuccess;
+}
+/////
+
+//WRITTING TEXT
+
+BOOL SaveTextFileFromEdit(HWND hEdit, LPCTSTR pszFileName)
+{
+	HANDLE hFile;
+	BOOL bSuccess = FALSE;
+
+	hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		DWORD dwTextLength;
+
+		dwTextLength = GetWindowTextLength(hEdit);
+		// No need to bother if there's no text.
+		if (dwTextLength > 0)
+		{
+			LPSTR pszText;
+			DWORD dwBufferSize = dwTextLength + 1;
+
+			pszText = (LPSTR)GlobalAlloc(GPTR, dwBufferSize);
+			if (pszText != NULL)
+			{
+				if (GetWindowText(hEdit, pszText, dwBufferSize))
+				{
+					DWORD dwWritten;
+
+					if (WriteFile(hFile, pszText, dwTextLength, &dwWritten, NULL))
+						bSuccess = TRUE;
+				}
+				GlobalFree(pszText);
+			}
+		}
+		CloseHandle(hFile);
+	}
+	return bSuccess;
 }
 
 ///
-
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_LBUTTONDOWN:
+
+	case WM_CREATE:
 	{
-						   char szFileName[MAX_PATH];
-						   HINSTANCE hInstance = GetModuleHandle(NULL);
+					  HFONT hfDefault;
+					  	  hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+						  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+						  0, 0, 200, 220, hwnd, NULL, GetModuleHandle(NULL), NULL);
+					  if (hEdit == NULL)
+						  MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
 
-						   GetModuleFileName(hInstance, szFileName, MAX_PATH);
-						   MessageBox(hwnd, szFileName, "This program is:", MB_OK | MB_ICONINFORMATION);
+				//  hfDefault = GetStockObject(DEFAULT_GUI_FONT);
+//					  SendMessage(hEdit, WM_SETFONT, (WPARAM)hfDefault, MAKELPARAM(FALSE, 0));
 
-						 
+					  /*	  hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+						  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+						  0, 0, 200, 120, hwnd, (HMENU)IDC_MAIN_EDIT, GetModuleHandle(NULL), NULL);
+					  if (hEdit == NULL)
+						  MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
+				  GetClientRect(hwnd, &rcClient);
 
-	}
-		break;
+					  hEdit = GetDlgItem(hwnd, IDC_MAIN_EDIT);
+					  SetWindowPos(hEdit, NULL, 0, 0, rcClient.right, rcClient.bottom, SWP_NOZORDER);
 
-	case WM_RBUTTONDOWN:
-	{
-						   char szFileName[MAX_PATH];
-						   HINSTANCE hInstance = GetModuleHandle(NULL);
+					  */
 
-					//	   GetModuleFileName(hInstance, szFileName, MAX_PATH);
-						   //   MessageBox(hwnd, szFileName, "This program is:", MB_OK | MB_ICONINFORMATION);
-	
-						MessageBox(hwnd, "Bye!", "This is also a message",
-							MB_OK | MB_ICONEXCLAMATION);
+					  CreateWindow("BUTTON",
+						  "GO",
+						  WS_BORDER | WS_CHILD | WS_VISIBLE,
+						  210, 10, 70, 50,
+						  hwnd, (HMENU)1, NULL, NULL);
+				
 	}
 		break;
 
@@ -75,140 +131,76 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 
 		switch (LOWORD(wParam))
-	 {
-	   case  ID_BBBS:
-	   {
-								
-						MessageBox(hwnd, "Bye!", "This is also a message",
-							MB_OK | MB_ICONEXCLAMATION);
-	   }
-		   break;
+		{
 
-	   case BUTTON1:
-	   {  
-					  char buffer[256];
-			   SendMessage(hEdit,
-			   WM_GETTEXT,
-			   sizeof(buffer) / sizeof(buffer[0]),
-			   reinterpret_cast<LPARAM>(buffer));
-			   MessageBox(NULL,
-			   buffer,
-			   "Information",
-			   MB_ICONINFORMATION);
+		case ID_FILE_OPEN:
+		{
+							 OPENFILENAME ofn;
+							 char szFileName[MAX_PATH] = "";
 
-	  }
-		   break;
+							 ZeroMemory(&ofn, sizeof(ofn));
 
-	   case ID_HELP:
-	   {
-					   int ret = DialogBox(GetModuleHandle(NULL),
-						   MAKEINTRESOURCE(IDD_DIALOG2), hwnd, ToolDlgProc);
-					   if (ret == IDOK){
-						   MessageBox(hwnd, "Dialog exited with IDOK.", "Notice",
-							   MB_OK | MB_ICONINFORMATION);
-					   }
-					   else if (ret == IDCANCEL){
-						   MessageBox(hwnd, "Dialog exited with IDCANCEL.", "Notice",
-							   MB_OK | MB_ICONINFORMATION);
-					   }
-					   else if (ret == -1){
-						   MessageBox(hwnd, "Dialog failed!", "Error",
-							   MB_OK | MB_ICONINFORMATION);
-					   }
-	   }
-		   break;
-	   case ID_FILE_PRINT:
-	   {
-							 MessageBox(hwnd, "Ceva interesant!!","Informatie", MB_OK | MB_ICONINFORMATION);
-							
-	   }
-		   break;
-	   case ID_TEXT:
-	   {
-					   
-					  DialogBox(GetModuleHandle(NULL),
-					  MAKEINTRESOURCE(IDD_DIALOG3), hwnd, ToolDlgProc);
+							 ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
+							 ofn.hwndOwner = hwnd;
+							 ofn.lpstrFilter = "Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0";
+							 ofn.lpstrFile = szFileName;
+							 ofn.nMaxFile = MAX_PATH;
+							 ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+							 ofn.lpstrDefExt = "txt";
 
-			
-	
-	   }
-		   break;
-	//   case IDC_REMOVE:
-	   { 
-					   MessageBox(hwnd, "Ceva interesant!!", "Informatie", MB_OK | MB_ICONINFORMATION);
-					   HWND hList = GetDlgItem(hwnd, IDD_DIALOG3);
-					   int count = SendMessage(hList, LB_GETSELCOUNT, 0, 0);
+							 if (GetOpenFileName(&ofn))
+							 {
+								 // Do something usefull with the filename stored in szFileName
+								 MessageBox(hwnd, szFileName, "Ati ales",
+									 MB_OK | MB_ICONEXCLAMATION);
+								 LoadTextFileToEdit(hwnd, szFileName);
+								 SaveTextFileFromEdit(hwnd, szFileName);
+							 }
 
-					   int *buf = (int*)GlobalAlloc(GPTR, sizeof(int)* count);
-					   SendMessage(hList, LB_GETSELITEMS, (WPARAM)count, (LPARAM)buf);
-					    
-					  
-					   // ... Do stuff with indexes
+		}
+			break;
+		case ID_FILE_SAVE:
+		{
 
-					   GlobalFree(buf);
+							 int val=0;
+							 val = GetWindowText(hEdit, &textSaved[0], 50);
+							 MessageBox(hwnd, textSaved, "Ati ales",
+								 MB_OK | MB_ICONEXCLAMATION);
+							 SaveTextFileFromEdit(hwnd, textSaved);
+
+		}
+			break;
+		case 1:
+			{
+				  int VAL = 0;
+				  //	char *t = &textSaved[0];
+				  VAL = GetWindowText(hEdit, &textSaved[0], 50);
+
+				  ::MessageBox(hwnd, textSaved, textSaved, MB_OK);
+				  break;
+
+			}
+		}
+		break;
 
 
-	   }
-		   break;
+	case WM_SIZE:
+	{
+					HWND hEdit;
+					RECT rcClient;
 
-	   case IDD_DIALOG3:
-	   {
+					GetClientRect(hwnd, &rcClient);
 
-						  
-				   switch (HIWORD(wParam))
-			 {
-					
+					hEdit = GetDlgItem(hwnd, IDC_MAIN_EDIT);
+					SetWindowPos(hEdit, NULL, 0, 0, rcClient.right, rcClient.bottom, SWP_NOZORDER);
+	}
+		break;
 
-
-				   case IDC_EDIT1:
-				   {  // Selection changed, do stuff here.
-
-
-										 int len = GetWindowTextLength(GetDlgItem(hwnd, IDC_EDIT1));
-										 if (len > 0)
-										 {
-											 int i;
-											 char* buf;
-
-											 buf = (char*)GlobalAlloc(GPTR, len + 1);
-											 GetDlgItemText(hwnd, IDC_EDIT1, buf, len + 1);
-
-											 //... do stuff with text ...
-											   
-											
-											 //
-
-											 BOOL bSuccess;
-											 int nTimes = GetDlgItemInt(hwnd, IDC_NUMBER, &bSuccess, FALSE);
-
-
-											 int index = SendDlgItemMessage(hwnd, IDC_LISTBOX, LB_ADDSTRING, 0, (LPARAM)"ceva");
-											 SendDlgItemMessage(hwnd, IDD_DIALOG3, LB_SETITEMDATA, (WPARAM)index, (LPARAM)nTimes);
-
-
-
-
-											 GlobalFree((HANDLE)buf);
-										 }
-				   }
-
-					   break;
-			 }
-					   break;
-						   // ... other controls
-
-	   }
-
-		   break;
-	   }
-		
-	   return true;
 
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		break;
 	case WM_DESTROY:
-		DestroyWindow(g_hToolbar);
 		PostQuitMessage(0);
 		break;
 	default:
@@ -217,9 +209,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
-
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
@@ -227,6 +216,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	HWND hwnd;
 	MSG Msg;
 
+	//Step 1: Registering the Window Class
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = 0;
 	wc.lpfnWndProc = WndProc;
@@ -234,12 +224,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance;
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(NULL, IDC_HAND);
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 0);
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
 	wc.lpszClassName = g_szClassName;
-	wc.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE("images.png"));
-	wc.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE("images.png"), IMAGE_ICON, 16, 16, 0);
+	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
 	if (!RegisterClassEx(&wc))
 	{
@@ -248,12 +237,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 0;
 	}
 
+	// Step 2: Creating the Window
 	hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
 		g_szClassName,
 		"The title of my window",
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 300, 120,
+		CW_USEDEFAULT, CW_USEDEFAULT, 450, 220,
 		NULL, NULL, hInstance, NULL);
 
 	if (hwnd == NULL)
@@ -266,6 +256,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 
+	// Step 3: The Message Loop
 	while (GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
 		TranslateMessage(&Msg);

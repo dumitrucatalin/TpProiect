@@ -6,11 +6,16 @@
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
+#include<conio.h>
 //
 #define IDC_MAIN_EDIT	101
+#define Buton_Afisare 18
+#define Buton_prelucrare 1
 HWND hEdit;
+HWND hEdit2;
+HWND hEdit3;
 const char g_szClassName[] = "myWindowClass";
-char textSaved[20];
+char textSaved[20000];
 
 
 ///C-brut
@@ -20,7 +25,7 @@ typedef struct radix
 	char caracter;
 	radix**next;
 	unsigned int nr_fii;
-
+	bool flag;
 };
 radix*rad;
 
@@ -47,9 +52,10 @@ void parcurgere(radix*rad,FILE*fis2)
 	int i;
 	if (rad != NULL)
 	{
-		fprintf(fis2, "%c", char(int(rad->caracter)));
+		fprintf(fis2, "%c-", char(int(rad->caracter)));
 		for (i = 0; i < rad->nr_fii; i++)
 		{
+			//fprintf(fis2,"\n");
 			parcurgere((rad->next)[i],fis2);
 		}
 	}
@@ -90,6 +96,40 @@ void functie(char*cuv, radix*rad)
 	}
 	constructie(aux, cuv, i);
 }
+int nr_caractere(FILE*fis)
+{
+	char c;
+	int nr = 0;
+	c = fgetc(fis);
+	while (!feof(fis))
+	{
+		if (isalpha(c))
+		{
+			nr++;
+		}
+		c = fgetc(fis);
+	}
+	return nr;
+}
+
+//void stergere(radix*rad)
+//{
+//	if (rad != NULL)
+//	{
+//		int i;
+//		for (i = 0; i < rad->nr_fii; i++)
+//		{
+//			//fprintf(fis2,"\n");
+//			if ((rad->next)[i] != NULL)
+//			{
+//				stergere((rad->next)[i]);
+//			}
+//		
+//		}
+//			free(rad);
+//		
+//	}
+//}
 
 //
 
@@ -100,6 +140,13 @@ void functie(char*cuv, radix*rad)
 ///LOAD TEXT
 BOOL LoadTextFileToEdit(HWND hEdit, LPCTSTR pszFileName)
 {
+	//
+	/*void CzebraDlg::OnBnClickedClearimagedatabase()
+	{
+		CWnd* pWnd = GetDlgItem(IDC_Box01);
+		pWnd->SetWindowText(_T(""));
+	}*/
+	//
 	HANDLE hFile;
 	BOOL bSuccess = FALSE;
 
@@ -175,27 +222,87 @@ BOOL SaveTextFileFromEdit(HWND hEdit, LPCTSTR pszFileName)
 ///
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
+	static int ok = 0;
+	static int nr_fis_intrare = 0;
+	static int nr_fis_iesire = 0;
 
 	switch (msg)
 	{
 
 	case WM_CREATE:
 	{
+
+
+					  //text static 1
+					  HWND statik = CreateWindowEx(0,
+						  "STATIC",
+						  NULL,
+						  WS_CHILD | WS_VISIBLE|SS_CENTER,
+						  60, 10, 300, 200,
+						  hwnd,
+						  NULL,
+						  NULL,
+						  NULL);
+
+					  SetWindowText(
+						  statik,
+						  "Introduceti textul pentru comprimat!!"
+						  );
+					  //
+					  //text static nr2
+					  HWND statik2 = CreateWindowEx(0,
+						  "STATIC",
+						  NULL,
+						  WS_CHILD | WS_VISIBLE|SS_CENTER,
+						  60, 260, 300, 200,
+						  hwnd,
+						  NULL,
+						  NULL,
+						  NULL);
+
+					  SetWindowText(
+						  statik2,
+						  "Arborele radix corespunzator este:"
+						  );
+
+					  //caseta text nr 1
 					  HFONT hfDefault;
 					  	  hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
 						  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-						  0, 0, 200, 200, hwnd, NULL, GetModuleHandle(NULL), NULL);
+						  0, 40, 400, 200, hwnd, NULL, GetModuleHandle(NULL), NULL);
 					  if (hEdit == NULL)
 						  MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
 
 					  //caseta text nr 2
 					  HFONT hfDefault2;
-					  hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+					  hEdit2 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
 						  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-						  200, 200, 400, 400, hwnd, NULL, GetModuleHandle(NULL), NULL);
+						  0, 280, 400, 200, hwnd, NULL, GetModuleHandle(NULL), NULL);
 					  if (hEdit == NULL)
 						  MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
+					  //caseta taext 3
+					  HFONT hfDefault3;
+					  hEdit3 = CreateWindowEx(WS_EX_CLIENTEDGE, "EDIT", "",
+						  WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+						  410, 350, 200, 100, hwnd, NULL, GetModuleHandle(NULL), NULL);
+					  if (hEdit == NULL)
+						  MessageBox(hwnd, "Could not create edit box.", "Error", MB_OK | MB_ICONERROR);
+
+
+					  //buton 1
+					  CreateWindow("BUTTON",
+						  "Afisare arbore",
+						  WS_BORDER | WS_CHILD | WS_VISIBLE,
+						  410, 300, 250, 50,
+						  hwnd, (HMENU)Buton_Afisare, NULL, NULL);
+					  //
+					  //buton 2
+					  CreateWindow("BUTTON",
+						  "Apasati pentru a prelucra textul!",
+						  WS_BORDER | WS_CHILD | WS_VISIBLE,
+						  410, 50, 250, 50,
+						  hwnd, (HMENU)Buton_prelucrare, NULL, NULL);
+					  //
 
 	}
 		break;
@@ -238,7 +345,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_SAVE:
 		{
 							 int val=0;
-							 val = GetWindowText(hEdit, &textSaved[0], 50);
+							 val = GetWindowText(hEdit, &textSaved[0], 20000);
 							 MessageBox(hwnd, textSaved, "Text inserat din:",
 								 MB_OK | MB_ICONEXCLAMATION);
 
@@ -268,43 +375,100 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_RUN:
 		{	
-					   char cuv[20];
+					  /* char cuv[20];
 					   inserare(rad, ' ');
 					   FILE*fis= fopen("fis.txt", "rt");
 					   FILE*fis2;
-					   while (!feof(fis))
+					   while (fscanf(fis, "%s", cuv))
 					   {
-						   fscanf(fis, "%s", cuv);
 						   functie(cuv, rad);
 					   }
 					   fclose(fis);
 					   fis2 = fopen("f.txt", "wt");
 					   parcurgere(rad, fis2);
 					   fclose(fis2);
-					   LoadTextFileToEdit(hEdit, "f.txt");
+					   LoadTextFileToEdit(hEdit, "f.txt");*/
+					 
 		}
 			break;
-		case 1:
+		case Buton_prelucrare:
 			{
-				  int VAL = 0;
-				  //	char *t = &textSaved[0];
-				  VAL = GetWindowText(hEdit, &textSaved[0], 50);
+								 ///TREBUIE ALBORITM DE CLAER!!!!!
+								 SetWindowText(hEdit2, "");
+								// GetWindowText(hEdit2, "\n", 1);
+								 SaveTextFileFromEdit(hEdit,"fis.txt");
+								 char cuv[100];
+								 inserare(rad, ' ');
+								 FILE*fis = fopen("fis.txt", "rt");
+								 FILE*fis2;
+								 while (!feof(fis))
+								 {
+									 fscanf(fis, "%s", cuv);
+									 functie(cuv, rad);
+								 }
+								 fseek(fis, 0, 0);
 
-				  ::MessageBox(hwnd, textSaved, textSaved, MB_OK);
-				  break;
+								nr_fis_intrare= nr_caractere(fis); ///
 
+								 fclose(fis);
+								 fis2 = fopen("f.txt", "wt");
+								 parcurgere(rad, fis2);
+								 fclose(fis2);
+								 fis2 = fopen("f.txt", "rt");
+								 fseek(fis, 0, 0);
+								 nr_fis_iesire = nr_caractere(fis2); ///
+								 fclose(fis2);
+								 rad = NULL;
+
+								
+
+								 remove("fis.txt");
+								// LoadTextFileToEdit(hEdit2, "f.txt");
+								  ok = 1;
+								 MessageBox(hwnd, "Textul a fost prelucrat cu succes!", "Atentionare!",
+									 MB_OK | MB_ICONINFORMATION);
 			}
+			break;
+		case Buton_Afisare:
+		{
+							  if (ok == 1)
+							  {
+								  MessageBox(hwnd, "Textul a fost transformat cu succes!!", "Atentionare!",
+									  MB_OK | MB_ICONINFORMATION);
+								  LoadTextFileToEdit(hEdit2, "f.txt");   //
+								
+								  FILE*fis = fopen("f.txt", "wt");
+								  fprintf(fis, "%d", nr_fis_intrare);
+								  fprintf(fis, " ");
+								  fprintf(fis, "%d", nr_fis_iesire);
+								  fclose(fis);
+								 LoadTextFileToEdit(hEdit3,"f.txt");
+							  }
+							  else
+							  {
+								  MessageBox(hwnd, "Textul nu a fost prelucrat anterior!!", "Atentionare!",
+									  MB_OK | MB_ICONSTOP);
+							  }
+							  /*FILE*fis3 = fopen("f.txt", "wt");
+							  fclose(fis3);*/
+							  //remove("f.txt");
+							
+		}
+			break;
+		case ID_CLEAR:
+		{
+						 SetWindowText(hEdit,"");
+						 
+		}
+			break;
 		}
 		break;
-
-
+	
 	case WM_SIZE:
 	{
 					HWND hEdit;
 					RECT rcClient;
-
 					GetClientRect(hwnd, &rcClient);
-
 					hEdit = GetDlgItem(hwnd, IDC_MAIN_EDIT);
 					SetWindowPos(hEdit, NULL, 0, 0, rcClient.right, rcClient.bottom, SWP_NOZORDER);
 	}
@@ -355,9 +519,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hwnd = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
 		g_szClassName,
-		"The title of my window",
+		"Radix Tree",
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 850, 420,
+		CW_USEDEFAULT, CW_USEDEFAULT, 850, 550,
 		NULL, NULL, hInstance, NULL);
 
 	if (hwnd == NULL)

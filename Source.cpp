@@ -25,7 +25,8 @@ typedef struct radix
 	char caracter;
 	radix**next;
 	unsigned int nr_fii;
-	bool flag;
+	bool flag=false;
+	bool enter = false;
 };
 radix*rad;
 
@@ -52,7 +53,12 @@ void parcurgere(radix*rad,FILE*fis2)
 	int i;
 	if (rad != NULL)
 	{
-		fprintf(fis2, "%c-", char(int(rad->caracter)));
+		
+		if (rad->flag == true)
+		{
+		//	fprintf(fis2," ");
+		}
+		fprintf(fis2, "%c", char(int(rad->caracter)));
 		for (i = 0; i < rad->nr_fii; i++)
 		{
 			//fprintf(fis2,"\n");
@@ -65,6 +71,10 @@ void constructie(radix*rad, char*cuv, int index)
 	int i;
 	for (i = index; i < strlen(cuv); i++)
 	{
+		if (i == strlen(cuv) - 1)
+		{
+			rad->flag = true;
+		}
 		inserare(rad, cuv[i]);
 		rad = (rad->next)[rad->nr_fii - 1];
 	}
@@ -112,26 +122,26 @@ int nr_caractere(FILE*fis)
 	return nr;
 }
 
-//void stergere(radix*rad)
-//{
-//	if (rad != NULL)
-//	{
-//		int i;
-//		for (i = 0; i < rad->nr_fii; i++)
-//		{
-//			//fprintf(fis2,"\n");
-//			if ((rad->next)[i] != NULL)
-//			{
-//				stergere((rad->next)[i]);
-//			}
-//		
-//		}
-//			free(rad);
-//		
-//	}
-//}
+void stergere(radix*rad)
+{
+	if (rad != NULL)
+	{
+		int i;
+		for (i = 0; i < rad->nr_fii; i++)
+		{
+			//fprintf(fis2,"\n");
+			
+			
+				stergere((rad->next)[i]);
+			
+		
+		}
+			if(i>=rad->nr_fii)free(rad);
+		
+	}
+}
 
-//
+
 
 
 // Step 4: the Window Procedure
@@ -418,7 +428,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								 fseek(fis, 0, 0);
 								 nr_fis_iesire = nr_caractere(fis2); ///
 								 fclose(fis2);
+								 stergere(rad);
+
 								 rad = NULL;
+
+								// rad = NULL;
 
 								
 
@@ -438,9 +452,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								  LoadTextFileToEdit(hEdit2, "f.txt");   //
 								
 								  FILE*fis = fopen("f.txt", "wt");
-								  fprintf(fis, "%d", nr_fis_intrare);
-								  fprintf(fis, " ");
-								  fprintf(fis, "%d", nr_fis_iesire);
+								  fprintf(fis, "Numar initial:%d\n", nr_fis_intrare);
+								  fprintf(fis, "Numar comprimat:%d\n", nr_fis_iesire);
+								  int x = 100 - ((nr_fis_iesire*100/nr_fis_intrare));
+								  fprintf(fis, "Procentul de eficienta: %d", x);
+								  fprintf(fis,"%c", '%');
+
 								  fclose(fis);
 								 LoadTextFileToEdit(hEdit3,"f.txt");
 							  }

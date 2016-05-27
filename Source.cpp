@@ -16,7 +16,8 @@ HWND hEdit2;
 HWND hEdit3;
 const char g_szClassName[] = "myWindowClass";
 char textSaved[20000];
-
+//char fis1[20000];
+//char fis2[20000];
 
 ///C-brut
 
@@ -238,7 +239,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
-
 	case WM_CREATE:
 	{
 
@@ -313,7 +313,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						  410, 50, 250, 50,
 						  hwnd, (HMENU)Buton_prelucrare, NULL, NULL);
 					  //
-
+					//  SetWindowText(hEdit, "Aici se introduce textul!");
+					  LoadTextFileToEdit(hEdit,"f.txt");
 	}
 		break;
 
@@ -405,7 +406,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 								 ///TREBUIE ALBORITM DE CLAER!!!!!
 								 SetWindowText(hEdit2, "");
-								// GetWindowText(hEdit2, "\n", 1);
 								 SaveTextFileFromEdit(hEdit,"fis.txt");
 								 char cuv[100];
 								 inserare(rad, ' ');
@@ -431,13 +431,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								 stergere(rad);
 
 								 rad = NULL;
-
-								// rad = NULL;
-
-								
-
-								 remove("fis.txt");
-								// LoadTextFileToEdit(hEdit2, "f.txt");
 								  ok = 1;
 								 MessageBox(hwnd, "Textul a fost prelucrat cu succes!", "Atentionare!",
 									 MB_OK | MB_ICONINFORMATION);
@@ -460,6 +453,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 								  fclose(fis);
 								 LoadTextFileToEdit(hEdit3,"f.txt");
+								
 							  }
 							  else
 							  {
@@ -469,7 +463,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 							  /*FILE*fis3 = fopen("f.txt", "wt");
 							  fclose(fis3);*/
 							  //remove("f.txt");
-							
+							  FILE*fis = fopen("f.txt", "wt");
+							  fputs("Introduceti text!", fis);
+							  LoadTextFileToEdit(hEdit, "fis.txt");
+							  fclose(fis);
 		}
 			break;
 		case ID_CLEAR:
@@ -518,13 +515,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIcon = LoadIcon(NULL, IDI_SHIELD);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW );
 	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
 	wc.lpszClassName = g_szClassName;
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+	wc.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SHIELD), IMAGE_ICON, 16, 16, 0);
 	if (!RegisterClassEx(&wc))
 	{
 		MessageBox(NULL, "Window Registration Failed!", "Error!",

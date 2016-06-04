@@ -16,9 +16,6 @@ HWND hEdit2;
 HWND hEdit3;
 const char g_szClassName[] = "myWindowClass";
 char textSaved[20000];
-//char fis1[20000];
-//char fis2[20000];
-
 ///C-brut
 
 typedef struct radix
@@ -49,23 +46,41 @@ void inserare(radix*&p, char caracter)
 		(p->next)[p->nr_fii - 1] = q;
 	}
 }
-void parcurgere(radix*rad,FILE*fis2)
+void afisare(FILE*fis, int recursivitati, radix *prim)
 {
-	int i;
-	if (rad != NULL)
+	static bool flag = false;
+	static bool ok = true;
+	if (prim->next == NULL)
 	{
-		
-		if (rad->flag == true)
-		{
-		//	fprintf(fis2," ");
-		}
-		fprintf(fis2, "%c", char(int(rad->caracter)));
-		for (i = 0; i < rad->nr_fii; i++)
-		{
-			//fprintf(fis2,"\n");
-			parcurgere((rad->next)[i],fis2);
-		}
+		fprintf(fis, "%c", prim->caracter);
+		flag = true;
+		return;
 	}
+	else
+	{
+		for (int i = 0; i < prim->nr_fii; i++)
+		{
+			if (flag == true)
+			{
+				fprintf(fis, "\n");
+				for (int i = 0; i < recursivitati; i++)
+				{
+					fprintf(fis, " ");
+				}
+				flag = false;
+				ok = false;
+			}
+			if (ok == true)
+			{
+				fprintf(fis, "%c", prim->caracter);
+			}
+			ok = true;
+			afisare(fis, recursivitati + 1, (prim->next)[i]);
+		}
+
+
+	}
+
 }
 void constructie(radix*rad, char*cuv, int index)
 {
@@ -142,7 +157,20 @@ void stergere(radix*rad)
 	}
 }
 
-
+int is_empty(FILE*fis)
+{
+	char c;
+	c = fgetc(fis);
+	if (c=='\0' || c==EOF)
+	{		
+		return 1;
+	}
+	else
+	{
+		return 0;
+		
+	}
+}
 
 
 // Step 4: the Window Procedure
@@ -151,13 +179,6 @@ void stergere(radix*rad)
 ///LOAD TEXT
 BOOL LoadTextFileToEdit(HWND hEdit, LPCTSTR pszFileName)
 {
-	//
-	/*void CzebraDlg::OnBnClickedClearimagedatabase()
-	{
-		CWnd* pWnd = GetDlgItem(IDC_Box01);
-		pWnd->SetWindowText(_T(""));
-	}*/
-	//
 	HANDLE hFile;
 	BOOL bSuccess = FALSE;
 
@@ -230,6 +251,10 @@ BOOL SaveTextFileFromEdit(HWND hEdit, LPCTSTR pszFileName)
 	return bSuccess;
 }
 
+
+
+
+
 ///
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -256,7 +281,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 					  SetWindowText(
 						  statik,
-						  "Introduceti textul pentru comprimat!!"
+						  "Introduceti textul pentru prelucrare!!"
 						  );
 					  //
 					  //text static nr2
@@ -312,11 +337,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						  WS_BORDER | WS_CHILD | WS_VISIBLE,
 						  410, 50, 250, 50,
 						  hwnd, (HMENU)Buton_prelucrare, NULL, NULL);
-					  //
-					//  SetWindowText(hEdit, "Aici se introduce textul!");
 					  LoadTextFileToEdit(hEdit,"f.txt");
 	}
 		break;
+
+
 
 
 	case WM_COMMAND:
@@ -331,7 +356,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 							 ZeroMemory(&ofn, sizeof(ofn));
 
-							 ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
+							 ofn.lStructSize = sizeof(ofn); 
 							 ofn.hwndOwner = hwnd;
 							 ofn.lpstrFilter = "Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0";
 							 ofn.lpstrFile = szFileName;
@@ -347,8 +372,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								static char text[100];
 
 								LoadTextFileToEdit(hEdit, szFileName);
-								// MessageBox(hwnd, text, text, MB_OK | MB_ICONERROR);
-								// SaveTextFileFromEdit(hwnd, szFileName);
 							 }
 
 		}
@@ -365,7 +388,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 							 ZeroMemory(&ofn, sizeof(ofn));
 
-							 ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
+							 ofn.lStructSize = sizeof(ofn);
 							 ofn.hwndOwner = hwnd;
 							 ofn.lpstrFilter = "Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0";
 							 ofn.lpstrFile = szFileName;
@@ -384,62 +407,65 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		}
 			break;
-		case ID_RUN:
+
+		case ID_START:
 		{	
-					  /* char cuv[20];
-					   inserare(rad, ' ');
-					   FILE*fis= fopen("fis.txt", "rt");
-					   FILE*fis2;
-					   while (fscanf(fis, "%s", cuv))
-					   {
-						   functie(cuv, rad);
-					   }
-					   fclose(fis);
-					   fis2 = fopen("f.txt", "wt");
-					   parcurgere(rad, fis2);
-					   fclose(fis2);
-					   LoadTextFileToEdit(hEdit, "f.txt");*/
-					 
+		
 		}
 			break;
 		case Buton_prelucrare:
-			{
-								 ///TREBUIE ALBORITM DE CLAER!!!!!
+		{
+								 int k = 1;
 								 SetWindowText(hEdit2, "");
-								 SaveTextFileFromEdit(hEdit,"fis.txt");
-								 char cuv[100];
-								 inserare(rad, ' ');
-								 FILE*fis = fopen("fis.txt", "rt");
-								 FILE*fis2;
-								 while (!feof(fis))
+								 if (SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0) == 0) // then field is empty
 								 {
-									 fscanf(fis, "%s", cuv);
-									 functie(cuv, rad);
+									 MessageBox(hwnd, "Nu ati introdus text!", "Atentionare!",
+										 MB_OK | MB_ICONERROR);
+									 SetWindowText(hEdit3, "");   //golire textbox3
+									 FILE*f = fopen("f.txt", "wt");
+
+									 fputs("Introduceti text!", f);
+									 LoadTextFileToEdit(hEdit, "fis.txt");
+									 fclose(f);
 								 }
-								 fseek(fis, 0, 0);
+								 else
+								 {
+									 SaveTextFileFromEdit(hEdit, "fis.txt");
+									 char cuv[100];
+									 inserare(rad, '*');
+									 FILE*fis = fopen("fis.txt", "rt");
+									 FILE*fis2;
+									 while (!feof(fis))
+									 {
+										 fscanf(fis, "%s", cuv);
+										 functie(cuv, rad);
+									 }
+									 fseek(fis, 0, 0);
 
-								nr_fis_intrare= nr_caractere(fis); ///
+									 nr_fis_intrare = nr_caractere(fis);
 
-								 fclose(fis);
-								 fis2 = fopen("f.txt", "wt");
-								 parcurgere(rad, fis2);
-								 fclose(fis2);
-								 fis2 = fopen("f.txt", "rt");
-								 fseek(fis, 0, 0);
-								 nr_fis_iesire = nr_caractere(fis2); ///
-								 fclose(fis2);
-								 stergere(rad);
+									 fclose(fis);
+									 fis2 = fopen("f.txt", "wt");
+									 afisare(fis2, 0, rad);
+									 fclose(fis2);
+									 fis2 = fopen("f.txt", "rt");
+									 fseek(fis, 0, 0);
+									 nr_fis_iesire = nr_caractere(fis2); 
+									 fclose(fis2);
+									 stergere(rad);
 
-								 rad = NULL;
-								  ok = 1;
-								 MessageBox(hwnd, "Textul a fost prelucrat cu succes!", "Atentionare!",
-									 MB_OK | MB_ICONINFORMATION);
-			}
+									 rad = NULL;
+									 ok = 1;
+									 MessageBox(hwnd, "Textul a fost prelucrat cu succes!", "Atentionare!",
+										 MB_OK | MB_ICONINFORMATION);
+								 }
+		}
 			break;
 		case Buton_Afisare:
 		{
 							  if (ok == 1)
 							  {
+								  ok = 0;
 								  MessageBox(hwnd, "Textul a fost transformat cu succes!!", "Atentionare!",
 									  MB_OK | MB_ICONINFORMATION);
 								  LoadTextFileToEdit(hEdit2, "f.txt");   //
@@ -453,26 +479,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 								  fclose(fis);
 								 LoadTextFileToEdit(hEdit3,"f.txt");
+
+								 fis = fopen("f.txt", "wt");
+								 fclose(fis);
 								
 							  }
 							  else
 							  {
 								  MessageBox(hwnd, "Textul nu a fost prelucrat anterior!!", "Atentionare!",
 									  MB_OK | MB_ICONSTOP);
+								  SetWindowText(hEdit3, "");
 							  }
-							  /*FILE*fis3 = fopen("f.txt", "wt");
-							  fclose(fis3);*/
-							  //remove("f.txt");
 							  FILE*fis = fopen("f.txt", "wt");
 							  fputs("Introduceti text!", fis);
 							  LoadTextFileToEdit(hEdit, "fis.txt");
+							  fclose(fis);
+
+							  fis = fopen("fis.txt", "wt");
 							  fclose(fis);
 		}
 			break;
 		case ID_CLEAR:
 		{
 						 SetWindowText(hEdit,"");
-						 
+						 SetWindowText(hEdit2, "");
+						 SetWindowText(hEdit3, "");
 		}
 			break;
 		}

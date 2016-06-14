@@ -380,7 +380,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 							 int val=0;
 							 val = GetWindowText(hEdit, &textSaved[0], 20000);
-							 MessageBox(hwnd, textSaved, "Text inserat din:",
+							 MessageBox(hwnd, textSaved, "Salvati urmatorul text:",
 								 MB_OK | MB_ICONEXCLAMATION);
 
 							 OPENFILENAME ofn;
